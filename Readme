@@ -1,0 +1,72 @@
+Abstract : 
+  The Federal Highway Administration Website on InfoTechnology provides critical 
+  information regarding Non-Destructive Evaluations (NDEs) used in pavement 
+  assessments. This website has specific information on 32 individual technologies 
+  for assessing pavement conditions without road surface damage. This will develop a 
+  question-answering or chatbot system as an interface to enhance user access and 
+  usability by easily retrieving required information on these NDE technologies. The 
+  system will process natural language queries, understand user intent, and deliver 
+  contextually accurate answers from the dataset. Using TF-IDF vectorization for 
+  information retrieval, the system ensures the presentation of relevant responses 
+  while maintaining scalability for future enhancements and integration of new 
+  technologies. The key challenge is to develop a robust NLP system that can 
+  understand varied queries and provide exact, context-specific responses to technical 
+  and non-technical users.
+
+Introduction : 
+  The Federal Highway Administration (FHWA) InfoTechnology website is a
+  critical resource for transportation engineers by providing information on
+  various Non-Destructive Evaluation (NDE) technologies used in pavement
+  assessment. These technologies are essential for evaluating pavement conditions
+  without causing damage to the road surface. Currently, there are 32 distinct
+  technologies listed on the website, each designed for a specific type of pavement
+  assessment, such as detecting asphalt and concrete defects, evaluating pavement
+  thickness and identifying subsurface issues.
+  The primary goal of this project is to develop a question-answering (QA) system or
+  chatbot that can extract and present relevant information about these 32 Pavements
+  NDE Technologies. The system will be designed to process natural language
+  queries, understand the user’s intent, and return the most appropriate and relevant
+  answers from the dataset. This project will significantly enhance
+  the website's usability by simplifying how users retrieve information and making it
+  more accessible to technical and non-technical users.
+  The technical challenge of this project lies in developing an NLP system capable of
+  accurately interpreting a wide variety of user queries and delivering precise,
+  context-aware responses. Our approach will leverage TF-IDF vectorization for
+  information retrieval, ensuring that users receive the most relevant responses to
+  their questions. Additionally, the system will be scalable, allowing for future
+  integration of new technologies and improvements in the search algorithm.
+
+System Architecture : 
+    Our system processes data to generate answers using a series of stages: data 
+    collection, structuring, embedding, indexing, and answer generation. Each
+    component is designed toenhance retrieval accuracy and response speed.
+    Here’s how each part works:
+        1. Data Collection (PDF Download and Extraction)
+          • Objective: To gather and organize data from PDFs with technical details on pavementtechnologies.
+          • Process: • Download PDFs: A loop cycles through each technology's name and URL,downloading the PDFs.
+          • Error Handling: Logs any download issues so they don’t stop the process.
+          • Text Extraction: Using pdfplumber, we pull text from each PDF page,structuring it for easy use later.
+        2. Data Structuring and JSON Formatting
+          • JSON Conversion: We save the extracted text in JSON format (as pavement_data.json),including fields like title and content, making it easier to work with in later stages.
+          • Chunking: Text is divided into manageable parts (e.g., 500 words each) with uniquechunk IDs. This ensures compatibility with our model’s input limits.
+        3. Embedding and FAISS Indexing
+          • Embedding Generation: • Model: We use the all-MiniLM-L6-v2 model (from Hugging Face)  to createdense vector embeddings, which encode and match user
+            queries with contentchunks.
+          • Tokenizer: The sentence-transformers library prepares each chunk by tokenizingthe text for embedding.
+          • FAISS Indexing: • Purpose: FAISS stores embeddings and optimizes similarity￾based searches,allowing quick retrieval of chunks based on how well they match the query.
+          • Metadata Storage: Each embedding is saved with its chunk ID and title,making it easy to retrieve and link relevant information.
+        4. Query and Retrieval System
+          • Query Encoding: • Model: The user’s query is embedded with the same MiniLM-L6-v2 model tokeep it consistent with the stored embeddings.
+          • Similarity Search: • FAISS Index: The query embedding is matched with indexed embeddings, andFAISS returns the most similar chunks based on similarity scores.
+          • Summarization: • Model: For concise answers, we use summarization models like Facebook/bart-large-cnn or distilbart-cnn-12-6.
+          • Tokenizer: BART’s tokenizer condenses content for clarity, reducingunnecessary details in the response.
+        5. Answer Generation with GPT-2
+          • Why GPT-2: GPT-2 was initially included to refine and polish responses further. However, since our summarization model (BART) met our needs effectively,
+            we optednot to use GPT-2 to keep things efficient.
+          • GPT-2 Integration (Optional):
+             • Usage: If used, GPT-2 would add more nuance to the answer generation,particularly for responses needing a conversational tone.
+             • How it Works:
+               • Model: GPT2LMHeadModel generates answers from the retrieved andsummarized content.
+               • Tokenizer: GPT2Tokenizer processes the prompt, managing token limitsand ensuring clarity.
+             • Prompt Design: The prompt could blend the summarized content and query to guide GPT-2 in producing refined answers.
+               This approach is resource-heavy, sowe prioritized BART for a faster response.
